@@ -51,6 +51,9 @@ PROVIDER_BASE_URLS = {
     "openrouter": "https://openrouter.ai/api/v1",
 }
 
+# Максимальная длина результата инструмента, сохраняемая в историю (токены экономятся)
+MAX_TOOL_OUTPUT_CHARS = 2000
+
 if sys.stdout is not None:
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 if sys.stdin is not None:
@@ -654,10 +657,8 @@ class MCPGuiApp:
         self.ssh_key_path = self.config["ssh_key_path"]
         self.disabled_tools = set(self.config.get("disabled_tools", []))
 
-        # Stop event
         self.stop_event = threading.Event()
 
-        # Меню
         menubar = tk.Menu(root)
         root.config(menu=menubar)
         chat_menu = tk.Menu(menubar, tearoff=0)
@@ -687,7 +688,6 @@ class MCPGuiApp:
         self.input_text = tk.Text(self.input_frame, wrap=tk.WORD)
         self.input_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Кнопка Stop
         self.stop_btn = ttkb.Button(self.input_frame, text="Stop", command=self.stop_generation, bootstyle="danger")
         self.stop_btn.pack(side=tk.RIGHT, padx=(5, 0), pady=2)
         self.stop_btn.config(state="disabled")
@@ -847,12 +847,16 @@ class MCPGuiApp:
                                 func_args = block.input
                                 self.append_chat("System", f"Calling {func_name}...")
                                 result = self.client.call_tool(func_name, func_args)
-                                content_text = ""
+                                # Извлекаем полный текст для GUI
+                                full_text = ""
                                 if result and "content" in result:
                                     for part in result["content"]:
                                         if part.get("type") == "text":
-                                            content_text += part["text"]
-                                tool_response = content_text or json.dumps(result, ensure_ascii=False)
+                                            full_text += part["text"]
+                                # Для истории обрезаем
+                                short_text = full_text[:MAX_TOOL_OUTPUT_CHARS]
+                                if len(full_text) > MAX_TOOL_OUTPUT_CHARS:
+                                    short_text += "\n... [truncated]"
                                 self.messages.append({
                                     "role": "assistant",
                                     "content": response.content
@@ -863,7 +867,7 @@ class MCPGuiApp:
                                         {
                                             "type": "tool_result",
                                             "tool_use_id": block.id,
-                                            "content": tool_response
+                                            "content": short_text
                                         }
                                     ]
                                 })
@@ -894,18 +898,24 @@ class MCPGuiApp:
                             self.append_chat("System", f"Calling {func_name}...")
                             try:
                                 result = self.client.call_tool(func_name, func_args)
-                                content_text = ""
+                                full_text = ""
                                 if result and "content" in result:
                                     for block in result["content"]:
                                         if block.get("type") == "text":
-                                            content_text += block.get("text", "")
-                                tool_response = content_text or json.dumps(result, ensure_ascii=False)
+                                            full_text += block.get("text", "")
                             except Exception as e:
-                                tool_response = f"Tool error: {e}"
+                                full_text = f"Tool error: {e}"
+
+                            # Показываем полный результат в GUI
+                            self.append_chat("Tool", full_text)
+                            # В историю кладём обрезанный
+                            short_text = full_text[:MAX_TOOL_OUTPUT_CHARS]
+                            if len(full_text) > MAX_TOOL_OUTPUT_CHARS:
+                                short_text += "\n... [truncated]"
                             self.messages.append({
                                 "role": "tool",
                                 "tool_call_id": tool_call.id,
-                                "content": tool_response
+                                "content": short_text
                             })
                     else:
                         self.append_chat("AI", msg.content)
@@ -933,14 +943,14 @@ class MCPGuiApp:
 
     def _enable_universal_copy_paste(self, widget):
         def handle(event):
-            if event.state & 4:  # Ctrl нажат
-                if event.char == '\x03':      # Ctrl+C
+            if event.state & 4:
+                if event.char == '\x03':
                     widget.event_generate("<<Copy>>")
-                elif event.char == '\x16':    # Ctrl+V
+                elif event.char == '\x16':
                     widget.event_generate("<<Paste>>")
-                elif event.char == '\x18':    # Ctrl+X
+                elif event.char == '\x18':
                     widget.event_generate("<<Cut>>")
-                elif event.char == '\x01':    # Ctrl+A (выделить всё)
+                elif event.char == '\x01':
                     widget.event_generate("<<SelectAll>>")
         widget.bind("<Control-KeyPress>", handle, add="+")
 
