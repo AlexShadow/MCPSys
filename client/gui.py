@@ -690,7 +690,7 @@ class MCPGuiApp:
         # Кнопка Stop
         self.stop_btn = ttkb.Button(self.input_frame, text="Stop", command=self.stop_generation, bootstyle="danger")
         self.stop_btn.pack(side=tk.RIGHT, padx=(5, 0), pady=2)
-        self.stop_btn.config(state="disabled")  # изначально неактивна
+        self.stop_btn.config(state="disabled")
 
         send_btn = ttkb.Button(self.input_frame, text="Send", command=self.send_message)
         send_btn.pack(side=tk.RIGHT, padx=(5, 0), pady=2)
@@ -821,7 +821,6 @@ class MCPGuiApp:
         self.append_chat("You", user_text)
         self.messages.append({"role": "user", "content": user_text})
 
-        # Сбрасываем флаг остановки и активируем кнопку Stop
         self.stop_event.clear()
         self.stop_btn.config(state="normal")
 
@@ -934,13 +933,15 @@ class MCPGuiApp:
 
     def _enable_universal_copy_paste(self, widget):
         def handle(event):
-            if event.state & 4:
-                if event.keycode == 54:
+            if event.state & 4:  # Ctrl нажат
+                if event.char == '\x03':      # Ctrl+C
                     widget.event_generate("<<Copy>>")
-                elif event.keycode == 55:
+                elif event.char == '\x16':    # Ctrl+V
                     widget.event_generate("<<Paste>>")
-                elif event.keycode == 52:
+                elif event.char == '\x18':    # Ctrl+X
                     widget.event_generate("<<Cut>>")
+                elif event.char == '\x01':    # Ctrl+A (выделить всё)
+                    widget.event_generate("<<SelectAll>>")
         widget.bind("<Control-KeyPress>", handle, add="+")
 
     def on_close(self):
