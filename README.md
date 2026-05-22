@@ -58,16 +58,19 @@ cd MCPSys
 pip install -r requirements.txt   # openai, ttkbootstrap, httpx, paramiko, anthropic
 python mcp_gui.py
 pyinstaller --onefile --noconsole --add-binary "mcp-server;." --add-binary "tools.toml;." mcp_gui.py
+```
 Сборка в EXE
-bash
+```bash
 pyinstaller --onefile --noconsole --add-binary "mcp-server;." --add-binary "tools.toml;." mcp_gui.py
-Сервер (Rust, собирается на Debian) ```
-bash
+Сервер (Rust, собирается на Debian)
+```
+```bash
 cd mcp-server-rust
 cargo build --release
 # Бинарник: target/release/mcp-server
 tools.toml
 Файл с описанием инструментов лежит в /opt/mcp-server/tools.toml на сервере. Его можно редактировать вручную для добавления новых команд.
+```
 
 📚 Примеры команд
 Запрос в чате	Действие
