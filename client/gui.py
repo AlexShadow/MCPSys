@@ -29,7 +29,7 @@ CONFIG_FILE = os.path.join(APP_DIR, "config.json")
 DEFAULT_SIZE = "1280x800"
 
 # ---------- Настройки по умолчанию ----------
-DEFAULT_PROVIDER = "deepseek"          # deepseek / openai / anthropic / groq / together / ollama / openrouter / custom
+DEFAULT_PROVIDER = "deepseek"
 DEFAULT_MODEL = "deepseek-chat"
 DEFAULT_KEY = ""
 DEFAULT_INPUT_HEIGHT = 80
@@ -42,7 +42,6 @@ REMOTE_SERVER_BIN = f"{REMOTE_SERVER_DIR}/mcp-server"
 REMOTE_TOOLS_FILE = f"{REMOTE_SERVER_DIR}/tools.toml"
 MCP_COMMAND = f"{REMOTE_SERVER_BIN} {REMOTE_TOOLS_FILE}"
 
-# Базовые URL для предустановленных провайдеров
 PROVIDER_BASE_URLS = {
     "deepseek": "https://api.deepseek.com/v1",
     "openai": "https://api.openai.com/v1",
@@ -50,7 +49,6 @@ PROVIDER_BASE_URLS = {
     "together": "https://api.together.xyz/v1",
     "ollama": "http://localhost:11434/v1",
     "openrouter": "https://openrouter.ai/api/v1",
-    # custom – пользователь вводит сам
 }
 
 if sys.stdout is not None:
@@ -288,7 +286,6 @@ def convert_tools_for_openai(mcp_tools, disabled_set=None):
     ]
 
 def convert_tools_for_anthropic(mcp_tools, disabled_set=None):
-    """Преобразует MCP-инструменты в формат Anthropic Tool."""
     if disabled_set is None:
         disabled_set = set()
     tools = []
@@ -432,7 +429,7 @@ class ToolsWindow(tk.Toplevel):
         self.on_save_callback(list(self.disabled_set))
         self.destroy()
 
-# ---------- Окно настроек (переработанное) ----------
+# ---------- Окно настроек ----------
 class SettingsWindow(tk.Toplevel):
     def __init__(self, parent, config, on_save_callback):
         super().__init__(parent)
@@ -445,11 +442,9 @@ class SettingsWindow(tk.Toplevel):
         notebook = ttkb.Notebook(self)
         notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # Вкладка AI Provider
         provider_frame = ttkb.Frame(notebook)
         notebook.add(provider_frame, text="AI Provider")
 
-        # Выбор провайдера
         ttkb.Label(provider_frame, text="Provider:").pack(pady=5)
         self.provider_var = tk.StringVar(value=config["provider"])
         provider_combo = ttk.Combobox(provider_frame, textvariable=self.provider_var,
@@ -458,7 +453,6 @@ class SettingsWindow(tk.Toplevel):
         provider_combo.pack(pady=5)
         provider_combo.bind("<<ComboboxSelected>>", self._on_provider_change)
 
-        # Base URL
         self.base_url_var = tk.StringVar(value=config.get("base_url", ""))
         self.base_url_frame = ttkb.Frame(provider_frame)
         self.base_url_frame.pack(pady=5)
@@ -466,13 +460,11 @@ class SettingsWindow(tk.Toplevel):
         self.base_url_entry = ttkb.Entry(self.base_url_frame, textvariable=self.base_url_var, width=35)
         self.base_url_entry.pack(side=tk.LEFT, padx=5)
 
-        # API Key
         ttkb.Label(provider_frame, text="API Key:").pack(pady=5)
         self.api_key_var = tk.StringVar(value=config["api_key"])
         self.api_key_entry = ttkb.Entry(provider_frame, textvariable=self.api_key_var, width=45, show="*")
         self.api_key_entry.pack(pady=5)
 
-        # Model
         ttkb.Label(provider_frame, text="Model:").pack(pady=5)
         model_frame = ttkb.Frame(provider_frame)
         model_frame.pack(pady=5)
@@ -482,11 +474,9 @@ class SettingsWindow(tk.Toplevel):
         refresh_btn = ttkb.Button(model_frame, text="🔄", command=self._refresh_models)
         refresh_btn.pack(side=tk.LEFT)
 
-        # Сообщение о недоступности Anthropic
         self.anthropic_warning = ttkb.Label(provider_frame, text="", bootstyle="warning")
         self.anthropic_warning.pack(pady=5)
 
-        # Вкладка SSH (оставляем как было)
         ssh_frame = ttkb.Frame(notebook)
         notebook.add(ssh_frame, text="SSH Connection")
 
@@ -515,28 +505,23 @@ class SettingsWindow(tk.Toplevel):
         self.install_btn.pack(side=tk.LEFT, padx=5)
         ttkb.Button(btn_frame, text="Copy SSH Key", command=self._copy_key, bootstyle="warning").pack(side=tk.LEFT, padx=5)
 
-        # Кнопки Save/Cancel
         bottom_frame = ttkb.Frame(self)
         bottom_frame.pack(pady=15)
         ttkb.Button(bottom_frame, text="Save", command=self._save).pack(side=tk.LEFT, padx=5)
-        ttkb.Button(bottom_frame, text="Cancel", command=self.destroy).pack(side=tk.LEFT, padx=5)
+        ttkb.Button(bottom_frame, text="Close", command=self.destroy).pack(side=tk.LEFT, padx=5)
 
-        # Инициализация полей в зависимости от выбранного провайдера
         self._on_provider_change()
 
     def _on_provider_change(self, event=None):
         provider = self.provider_var.get()
-        # Подставляем Base URL, если известен
         if provider in PROVIDER_BASE_URLS:
             self.base_url_var.set(PROVIDER_BASE_URLS[provider])
         else:
             self.base_url_var.set("")
-        # Для Anthropic показываем предупреждение, если библиотека не установлена
         if provider == "anthropic" and not ANTHROPIC_AVAILABLE:
             self.anthropic_warning.config(text="⚠️ Установите библиотеку 'anthropic' для поддержки Claude")
         else:
             self.anthropic_warning.config(text="")
-        # Очищаем модель и загружаем новый список
         self.model_var.set("")
         self._refresh_models()
 
@@ -547,13 +532,11 @@ class SettingsWindow(tk.Toplevel):
             return
 
         if provider == "anthropic":
-            # Фиксированный список моделей Anthropic
             models = ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307",
                       "claude-3-5-sonnet-20240620", "claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"]
             self.model_combo['values'] = models
             return
 
-        # Для OpenAI-совместимых провайдеров
         base_url = self.base_url_var.get().strip()
         try:
             client = OpenAI(api_key=api_key, base_url=base_url,
@@ -562,7 +545,6 @@ class SettingsWindow(tk.Toplevel):
             model_ids = [m.id for m in models]
             self.model_combo['values'] = model_ids
         except Exception as e:
-            # Если не удалось загрузить, оставляем пустой список
             self.model_combo['values'] = []
 
     def _browse_key(self):
@@ -653,13 +635,12 @@ class SettingsWindow(tk.Toplevel):
             ssh_user=ssh_user,
             ssh_key_path=ssh_key_path
         )
-        self.destroy()
 
-# ---------- Главное окно (адаптировано под разных провайдеров) ----------
+# ---------- Главное окно ----------
 class MCPGuiApp:
     def __init__(self, root):
         self.root = root
-        root.title("MCP Debian Client")
+        root.title("MCPSys")
         root.geometry(DEFAULT_SIZE)
 
         self.config = load_config()
@@ -673,8 +654,15 @@ class MCPGuiApp:
         self.ssh_key_path = self.config["ssh_key_path"]
         self.disabled_tools = set(self.config.get("disabled_tools", []))
 
+        # Stop event
+        self.stop_event = threading.Event()
+
+        # Меню
         menubar = tk.Menu(root)
         root.config(menu=menubar)
+        chat_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Chat", menu=chat_menu)
+        chat_menu.add_command(label="New Chat", command=self.new_chat)
         settings_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Settings", menu=settings_menu)
         settings_menu.add_command(label="API & SSH", command=self.open_settings)
@@ -699,6 +687,11 @@ class MCPGuiApp:
         self.input_text = tk.Text(self.input_frame, wrap=tk.WORD)
         self.input_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        # Кнопка Stop
+        self.stop_btn = ttkb.Button(self.input_frame, text="Stop", command=self.stop_generation, bootstyle="danger")
+        self.stop_btn.pack(side=tk.RIGHT, padx=(5, 0), pady=2)
+        self.stop_btn.config(state="disabled")  # изначально неактивна
+
         send_btn = ttkb.Button(self.input_frame, text="Send", command=self.send_message)
         send_btn.pack(side=tk.RIGHT, padx=(5, 0), pady=2)
 
@@ -711,11 +704,12 @@ class MCPGuiApp:
         self.status_label.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.client = None
-        self.ai_client = None          # OpenAI или Anthropic
-        self.tools_openai = []        # инструменты для OpenAI-совместимых
-        self.tools_anthropic = []     # инструменты для Anthropic
+        self.ai_client = None
+        self.tools_openai = []
+        self.tools_anthropic = []
         self.messages = []
         self.tools_window = None
+        self.processing_thread = None
 
         if self.api_key and self.ssh_host and self.ssh_user:
             self.update_status("Connecting...")
@@ -733,6 +727,13 @@ class MCPGuiApp:
         self.chat_area.text.insert(tk.END, f"{sender}: {text}\n\n")
         self.chat_area.text.see(tk.END)
         self.chat_area.text.config(state='disabled')
+
+    def new_chat(self):
+        self.messages = []
+        self.chat_area.text.config(state='normal')
+        self.chat_area.text.delete('1.0', tk.END)
+        self.chat_area.text.config(state='disabled')
+        self.update_status("Chat cleared")
 
     def open_settings(self):
         SettingsWindow(self.root, self.config, self.on_settings_save)
@@ -782,14 +783,12 @@ class MCPGuiApp:
     def init_client(self):
         try:
             self.client = MCPClient(self.ssh_user, self.ssh_host, MCP_COMMAND, self.ssh_key_path)
-            # Создаём ИИ-клиент в зависимости от провайдера
             if self.provider == "anthropic":
                 if not ANTHROPIC_AVAILABLE:
                     raise Exception("Anthropic SDK not installed")
                 self.ai_client = Anthropic(api_key=self.api_key)
                 self.tools_anthropic = convert_tools_for_anthropic(self.client.tools, self.disabled_tools)
             else:
-                # Все остальные используют OpenAI-совместимый API
                 self.ai_client = OpenAI(api_key=self.api_key, base_url=self.base_url,
                                         http_client=httpx.Client(headers={"Content-Type": "application/json; charset=utf-8"}))
                 self.tools_openai = convert_tools_for_openai(self.client.tools, self.disabled_tools)
@@ -807,6 +806,10 @@ class MCPGuiApp:
             self.send_message()
             return "break"
 
+    def stop_generation(self):
+        self.stop_event.set()
+        self.stop_btn.config(state="disabled")
+
     def send_message(self):
         if not self.client or not self.ai_client:
             messagebox.showwarning("Not connected", "Нет подключения.")
@@ -817,21 +820,27 @@ class MCPGuiApp:
         self.input_text.delete("1.0", tk.END)
         self.append_chat("You", user_text)
         self.messages.append({"role": "user", "content": user_text})
-        threading.Thread(target=self.process_response, daemon=True).start()
+
+        # Сбрасываем флаг остановки и активируем кнопку Stop
+        self.stop_event.clear()
+        self.stop_btn.config(state="normal")
+
+        self.processing_thread = threading.Thread(target=self.process_response, daemon=True)
+        self.processing_thread.start()
 
     def process_response(self):
         try:
             self.update_status("Thinking...")
-            while True:
+            while not self.stop_event.is_set():
                 if self.provider == "anthropic":
-                    # Используем Anthropic API
                     response = self.ai_client.messages.create(
                         model=self.model,
                         max_tokens=4096,
                         tools=self.tools_anthropic,
                         messages=self._convert_messages_for_anthropic()
                     )
-                    # Обработка ответа Anthropic
+                    if self.stop_event.is_set():
+                        break
                     if response.stop_reason == "tool_use":
                         for block in response.content:
                             if block.type == "tool_use":
@@ -845,7 +854,6 @@ class MCPGuiApp:
                                         if part.get("type") == "text":
                                             content_text += part["text"]
                                 tool_response = content_text or json.dumps(result, ensure_ascii=False)
-                                # Добавляем результат в историю
                                 self.messages.append({
                                     "role": "assistant",
                                     "content": response.content
@@ -861,35 +869,40 @@ class MCPGuiApp:
                                     ]
                                 })
                     else:
-                        # Финальный текстовый ответ
                         text = "".join(block.text for block in response.content if block.type == "text")
                         self.append_chat("Claude", text)
                         break
                 else:
-                    # OpenAI-совместимый вызов
                     response = self.ai_client.chat.completions.create(
                         model=self.model,
                         messages=self.messages,
                         tools=self.tools_openai if self.tools_openai else None
                     )
+                    if self.stop_event.is_set():
+                        break
                     msg = response.choices[0].message
                     self.messages.append(msg)
 
                     if msg.tool_calls:
                         for tool_call in msg.tool_calls:
+                            if self.stop_event.is_set():
+                                break
                             func_name = tool_call.function.name
                             try:
                                 func_args = json.loads(tool_call.function.arguments)
                             except:
                                 func_args = {}
                             self.append_chat("System", f"Calling {func_name}...")
-                            result = self.client.call_tool(func_name, func_args)
-                            content_text = ""
-                            if result and "content" in result:
-                                for block in result["content"]:
-                                    if block.get("type") == "text":
-                                        content_text += block.get("text", "")
-                            tool_response = content_text or json.dumps(result, ensure_ascii=False)
+                            try:
+                                result = self.client.call_tool(func_name, func_args)
+                                content_text = ""
+                                if result and "content" in result:
+                                    for block in result["content"]:
+                                        if block.get("type") == "text":
+                                            content_text += block.get("text", "")
+                                tool_response = content_text or json.dumps(result, ensure_ascii=False)
+                            except Exception as e:
+                                tool_response = f"Tool error: {e}"
                             self.messages.append({
                                 "role": "tool",
                                 "tool_call_id": tool_call.id,
@@ -898,24 +911,25 @@ class MCPGuiApp:
                     else:
                         self.append_chat("AI", msg.content)
                         break
+            if self.stop_event.is_set():
+                self.append_chat("System", "Stopped")
             self.update_status(f"Connected ({len(self.client.tools)} tools)")
         except Exception as e:
             self.append_chat("System", f"Error: {e}")
             self.update_status("Error")
+        finally:
+            self.stop_btn.config(state="disabled")
 
     def _convert_messages_for_anthropic(self):
-        """Преобразует историю сообщений в формат Anthropic."""
         anthropic_messages = []
         for msg in self.messages:
             if msg["role"] == "user":
                 anthropic_messages.append({"role": "user", "content": msg["content"]})
             elif msg["role"] == "assistant":
-                # Если это ответ с tool_calls, его нужно преобразовать
                 if isinstance(msg.get("content"), list):
                     anthropic_messages.append({"role": "assistant", "content": msg["content"]})
                 else:
                     anthropic_messages.append({"role": "assistant", "content": msg["content"]})
-            # Пропускаем tool-сообщения, они уже добавлены в user
         return anthropic_messages
 
     def _enable_universal_copy_paste(self, widget):
@@ -930,6 +944,7 @@ class MCPGuiApp:
         widget.bind("<Control-KeyPress>", handle, add="+")
 
     def on_close(self):
+        self.stop_event.set()
         if self.client:
             self.client.close()
         self.root.destroy()
