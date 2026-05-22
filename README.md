@@ -61,7 +61,7 @@ pyinstaller --onefile --noconsole --add-binary "mcp-server;." --add-binary "tool
 Сборка в EXE
 bash
 pyinstaller --onefile --noconsole --add-binary "mcp-server;." --add-binary "tools.toml;." mcp_gui.py
-Сервер (Rust, собирается на Debian)
+Сервер (Rust, собирается на Debian) ```
 bash
 cd mcp-server-rust
 cargo build --release
