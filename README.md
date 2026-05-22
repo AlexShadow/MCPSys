@@ -62,7 +62,7 @@ pyinstaller --onefile --noconsole --add-binary "mcp-server;." --add-binary "tool
 ```
 Сборка в EXE
 ```bash
-pyinstaller --onefile --noconsole --add-binary "mcp-server;." --add-binary "tools.toml;." mcp_gui.py
+pyinstaller --onefile --noconsole --name MCPSys --add-binary "mcp-server;." --add-binary "tools.toml;." --collect-all paramiko --collect-all anthropic mcp_gui.py
 ```
 Сервер (Rust, собирается на Debian)
 ```bash
