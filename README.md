@@ -2,10 +2,10 @@
 
 MCPSys (MCP System) — это бесплатный графический клиент для управления серверами Debian с помощью искусственного интеллекта. Программа позволяет **администрировать сервер на естественном языке**, используя DeepSeek, OpenAI, Anthropic Claude и другие LLM.
 
-Вам больше не нужно помнить сотни консольных команд — просто опишите задачу, и ИИ выполнит её.
 <img width="854" height="582" alt="Setting" src="https://github.com/user-attachments/assets/f486514f-c75c-4e1f-967e-8419d54a740c" />
 <img width="854" height="582" alt="Connect" src="https://github.com/user-attachments/assets/ee6f5e89-ff63-4607-9cc7-ef7c3d208bc6" />
 
+Вам больше не нужно помнить сотни консольных команд — просто опишите задачу, и ИИ выполнит её.
 
 ## 🚀 Возможности
 
