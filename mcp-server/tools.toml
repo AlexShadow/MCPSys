@@ -1,0 +1,1978 @@
+# ──────────────────────────────────────────────
+#  СИСТЕМНАЯ ИНФОРМАЦИЯ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "uname"
+description = "Вывести информацию о системе (ядро, архитектура, версия)"
+command = "uname -a"
+
+[[tools]]
+name = "uptime"
+description = "Показать время работы системы и среднюю нагрузку"
+command = "uptime"
+
+[[tools]]
+name = "free"
+description = "Показать использование памяти (RAM и swap)"
+command = "free -h"
+
+[[tools]]
+name = "df"
+description = "Показать свободное место на дисках"
+command = "df -h"
+
+[[tools]]
+name = "du"
+description = "Показать размер директории"
+command = "du -sh {path}"
+
+[tools.parameters.path]
+type = "string"
+description = "Путь к директории (по умолчанию текущая)"
+required = false
+
+[[tools]]
+name = "lsblk"
+description = "Показать блочные устройства (диски, разделы)"
+command = "lsblk"
+
+[[tools]]
+name = "lscpu"
+description = "Информация о процессоре"
+command = "lscpu"
+
+[[tools]]
+name = "lspci"
+description = "Показать PCI-устройства"
+command = "lspci"
+
+[[tools]]
+name = "lsusb"
+description = "Показать USB-устройства"
+command = "lsusb"
+
+[[tools]]
+name = "dmidecode"
+description = "Информация о аппаратном обеспечении (требует root)"
+command = "dmidecode -t system"
+
+[[tools]]
+name = "sensors"
+description = "Показать температуру компонентов (если установлены lm-sensors)"
+command = "sensors"
+
+[[tools]]
+name = "hostname"
+description = "Показать или установить имя хоста"
+command = "hostname"
+
+[[tools]]
+name = "date"
+description = "Показать или установить системную дату/время"
+command = "date"
+
+# ──────────────────────────────────────────────
+#  ПРОЦЕССЫ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "ps"
+description = "Показать запущенные процессы"
+command = "ps aux"
+
+[[tools]]
+name = "top"
+description = "Интерактивный список процессов (однократный вывод)"
+command = "top -b -n 1"
+
+[[tools]]
+name = "kill"
+description = "Отправить сигнал процессу по PID"
+command = "kill {signal} {pid}"
+
+[tools.parameters.signal]
+type = "string"
+description = "Сигнал (например, -9)"
+required = false
+
+[tools.parameters.pid]
+type = "integer"
+description = "PID процесса"
+required = true
+
+[[tools]]
+name = "killall"
+description = "Убить процессы по имени"
+command = "killall {name}"
+
+[tools.parameters.name]
+type = "string"
+description = "Имя процесса"
+required = true
+
+[[tools]]
+name = "pgrep"
+description = "Найти PID процесса по имени"
+command = "pgrep {pattern}"
+
+[tools.parameters.pattern]
+type = "string"
+description = "Шаблон имени"
+required = true
+
+[[tools]]
+name = "nice"
+description = "Запустить программу с изменённым приоритетом"
+command = "nice -n {priority} {command}"
+
+[tools.parameters.priority]
+type = "integer"
+description = "Приоритет (от -20 до 19)"
+required = true
+
+[tools.parameters.command]
+type = "string"
+description = "Команда для запуска"
+required = true
+
+[[tools]]
+name = "renice"
+description = "Изменить приоритет существующего процесса"
+command = "renice {priority} -p {pid}"
+
+[tools.parameters.priority]
+type = "integer"
+description = "Новый приоритет"
+required = true
+
+[tools.parameters.pid]
+type = "integer"
+description = "PID процесса"
+required = true
+
+# ──────────────────────────────────────────────
+#  СЕТЬ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "ip_addr"
+description = "Показать IP-адреса интерфейсов"
+command = "ip addr show"
+
+[[tools]]
+name = "ifconfig"
+description = "Показать или настроить сетевые интерфейсы (устаревшая)"
+command = "ifconfig"
+
+[[tools]]
+name = "ping"
+description = "Пропинговать хост"
+command = "ping -c {count} {host}"
+
+[tools.parameters.count]
+type = "integer"
+description = "Количество пакетов"
+required = false
+
+[tools.parameters.host]
+type = "string"
+description = "Целевой хост"
+required = true
+
+[[tools]]
+name = "traceroute"
+description = "Трассировка маршрута до хоста"
+command = "traceroute {host}"
+
+[tools.parameters.host]
+type = "string"
+description = "Целевой хост"
+required = true
+
+[[tools]]
+name = "nslookup"
+description = "Запросить DNS-записи"
+command = "nslookup {domain}"
+
+[tools.parameters.domain]
+type = "string"
+description = "Доменное имя"
+required = true
+
+[[tools]]
+name = "dig"
+description = "Расширенная утилита DNS-запросов"
+command = "dig {domain} {type}"
+
+[tools.parameters.domain]
+type = "string"
+description = "Доменное имя"
+required = true
+
+[tools.parameters.type]
+type = "string"
+description = "Тип записи (A, MX, TXT и т.д.)"
+required = false
+
+[[tools]]
+name = "netstat"
+description = "Сетевые соединения, таблицы маршрутизации, статистика"
+command = "netstat -tulpn"
+
+[[tools]]
+name = "ss"
+description = "Современная замена netstat"
+command = "ss -tulpn"
+
+[[tools]]
+name = "nmap"
+description = "Сканирование портов (если установлен nmap)"
+command = "nmap {target}"
+
+[tools.parameters.target]
+type = "string"
+description = "Цель (IP или домен)"
+required = true
+
+[[tools]]
+name = "tcpdump"
+description = "Захват сетевых пакетов (требует root)"
+command = "tcpdump -i {interface} -c {count}"
+
+[tools.parameters.interface]
+type = "string"
+description = "Сетевой интерфейс"
+required = true
+
+[tools.parameters.count]
+type = "integer"
+description = "Количество пакетов"
+required = false
+
+[[tools]]
+name = "iptables_list"
+description = "Показать правила iptables"
+command = "iptables -L -n -v"
+
+[[tools]]
+name = "ufw_status"
+description = "Статус UFW"
+command = "ufw status verbose"
+
+[[tools]]
+name = "ufw_enable"
+description = "Включить UFW"
+command = "ufw --force enable"
+
+[[tools]]
+name = "ufw_disable"
+description = "Отключить UFW"
+command = "ufw --force disable"
+
+[[tools]]
+name = "ufw_allow"
+description = "Разрешить порт/сервис в UFW"
+command = "ufw allow {port}"
+
+[tools.parameters.port]
+type = "string"
+description = "Порт или сервис (например, 22/tcp)"
+required = true
+
+[[tools]]
+name = "ufw_deny"
+description = "Запретить порт/сервис в UFW"
+command = "ufw deny {port}"
+
+[tools.parameters.port]
+type = "string"
+description = "Порт или сервис"
+required = true
+
+# ──────────────────────────────────────────────
+#  ФАЙЛЫ И ДИРЕКТОРИИ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "ls"
+description = "Список файлов в директории"
+command = "ls -la {path}"
+
+[tools.parameters.path]
+type = "string"
+description = "Путь к директории"
+required = false
+
+[[tools]]
+name = "cat"
+description = "Вывести содержимое файла"
+command = "cat {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к файлу"
+required = true
+
+[[tools]]
+name = "less"
+description = "Просмотр файла с прокруткой (вывод через cat)"
+command = "cat {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к файлу"
+required = true
+
+[[tools]]
+name = "head"
+description = "Показать первые строки файла"
+command = "head -n {lines} {file}"
+
+[tools.parameters.lines]
+type = "integer"
+description = "Количество строк"
+required = false
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к файлу"
+required = true
+
+[[tools]]
+name = "tail"
+description = "Показать последние строки файла"
+command = "tail -n {lines} {file}"
+
+[tools.parameters.lines]
+type = "integer"
+description = "Количество строк"
+required = false
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к файлу"
+required = true
+
+[[tools]]
+name = "touch"
+description = "Создать пустой файл или обновить временные метки"
+command = "touch {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Имя файла"
+required = true
+
+[[tools]]
+name = "mkdir"
+description = "Создать директорию"
+command = "mkdir -p {path}"
+
+[tools.parameters.path]
+type = "string"
+description = "Путь к новой директории"
+required = true
+
+[[tools]]
+name = "rm"
+description = "Удалить файл(ы)"
+command = "rm -rf {path}"
+
+[tools.parameters.path]
+type = "string"
+description = "Путь к файлу или директории"
+required = true
+
+[[tools]]
+name = "cp"
+description = "Копировать файлы или директории"
+command = "cp -r {source} {dest}"
+
+[tools.parameters.source]
+type = "string"
+description = "Исходный путь"
+required = true
+
+[tools.parameters.dest]
+type = "string"
+description = "Путь назначения"
+required = true
+
+[[tools]]
+name = "mv"
+description = "Переместить или переименовать"
+command = "mv {source} {dest}"
+
+[tools.parameters.source]
+type = "string"
+description = "Исходный путь"
+required = true
+
+[tools.parameters.dest]
+type = "string"
+description = "Путь назначения"
+required = true
+
+[[tools]]
+name = "find"
+description = "Поиск файлов"
+command = "find {path} -name '{pattern}'"
+
+[tools.parameters.path]
+type = "string"
+description = "Начальная директория"
+required = false
+
+[tools.parameters.pattern]
+type = "string"
+description = "Шаблон имени файла"
+required = true
+
+[[tools]]
+name = "grep"
+description = "Поиск текста в файлах или выводе"
+command = "grep -r '{pattern}' {path}"
+
+[tools.parameters.pattern]
+type = "string"
+description = "Регулярное выражение"
+required = true
+
+[tools.parameters.path]
+type = "string"
+description = "Путь к файлу или директории"
+required = false
+
+[[tools]]
+name = "wc"
+description = "Подсчёт строк, слов, символов"
+command = "wc -l {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к файлу"
+required = true
+
+[[tools]]
+name = "sort"
+description = "Сортировка строк"
+command = "sort {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к файлу"
+required = true
+
+[[tools]]
+name = "uniq"
+description = "Удалить дубликаты строк (обычно после sort)"
+command = "uniq {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к файлу"
+required = true
+
+[[tools]]
+name = "diff"
+description = "Сравнить два файла построчно"
+command = "diff {file1} {file2}"
+
+[tools.parameters.file1]
+type = "string"
+description = "Первый файл"
+required = true
+
+[tools.parameters.file2]
+type = "string"
+description = "Второй файл"
+required = true
+
+[[tools]]
+name = "tar_create"
+description = "Создать tar-архив"
+command = "tar -czf {archive} {path}"
+
+[tools.parameters.archive]
+type = "string"
+description = "Имя архива (.tar.gz)"
+required = true
+
+[tools.parameters.path]
+type = "string"
+description = "Что архивировать"
+required = true
+
+[[tools]]
+name = "tar_extract"
+description = "Распаковать tar-архив"
+command = "tar -xzf {archive} -C {dest}"
+
+[tools.parameters.archive]
+type = "string"
+description = "Путь к архиву"
+required = true
+
+[tools.parameters.dest]
+type = "string"
+description = "Куда распаковать"
+required = false
+
+[[tools]]
+name = "gzip"
+description = "Сжать файл через gzip"
+command = "gzip {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Файл для сжатия"
+required = true
+
+[[tools]]
+name = "gunzip"
+description = "Распаковать .gz"
+command = "gunzip {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Файл .gz"
+required = true
+
+[[tools]]
+name = "zip"
+description = "Создать zip-архив"
+command = "zip {archive} {files}"
+
+[tools.parameters.archive]
+type = "string"
+description = "Имя архива"
+required = true
+
+[tools.parameters.files]
+type = "string"
+description = "Файлы для упаковки"
+required = true
+
+[[tools]]
+name = "unzip"
+description = "Распаковать zip-архив"
+command = "unzip {archive} -d {dest}"
+
+[tools.parameters.archive]
+type = "string"
+description = "Путь к архиву"
+required = true
+
+[tools.parameters.dest]
+type = "string"
+description = "Директория для распаковки"
+required = false
+
+# ──────────────────────────────────────────────
+#  ПОЛЬЗОВАТЕЛИ И ГРУППЫ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "useradd"
+description = "Создать пользователя"
+command = "useradd -m {username}"
+
+[tools.parameters.username]
+type = "string"
+description = "Логин"
+required = true
+
+[[tools]]
+name = "usermod"
+description = "Изменить пользователя"
+command = "usermod -aG {group} {username}"
+
+[tools.parameters.group]
+type = "string"
+description = "Группа"
+required = true
+
+[tools.parameters.username]
+type = "string"
+description = "Пользователь"
+required = true
+
+[[tools]]
+name = "userdel"
+description = "Удалить пользователя"
+command = "userdel -r {username}"
+
+[tools.parameters.username]
+type = "string"
+description = "Пользователь"
+required = true
+
+[[tools]]
+name = "passwd"
+description = "Изменить пароль пользователя (интерактивно не получится, поэтому через chpasswd)"
+command = "echo '{username}:{password}' | chpasswd"
+
+[tools.parameters.username]
+type = "string"
+description = "Пользователь"
+required = true
+
+[tools.parameters.password]
+type = "string"
+description = "Новый пароль"
+required = true
+
+[[tools]]
+name = "groupadd"
+description = "Создать группу"
+command = "groupadd {group}"
+
+[tools.parameters.group]
+type = "string"
+description = "Имя группы"
+required = true
+
+[[tools]]
+name = "who"
+description = "Кто сейчас в системе"
+command = "who"
+
+[[tools]]
+name = "w"
+description = "Кто и что делает"
+command = "w"
+
+[[tools]]
+name = "last"
+description = "История входов в систему"
+command = "last -n 20"
+
+[[tools]]
+name = "su"
+description = "Переключиться на другого пользователя (в рамках команды)"
+command = "su - {user} -c '{command}'"
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = true
+
+[tools.parameters.command]
+type = "string"
+description = "Команда"
+required = true
+
+# ──────────────────────────────────────────────
+#  ПАКЕТЫ (APT, DPKG, SNAP, PIP, NPM...)
+# ──────────────────────────────────────────────
+[[tools]]
+name = "apt_update"
+description = "Обновить список пакетов"
+command = "apt update"
+
+[[tools]]
+name = "apt_upgrade"
+description = "Обновить все пакеты"
+command = "apt upgrade -y"
+
+[[tools]]
+name = "apt_install"
+description = "Установить пакет"
+command = "apt install -y {pkg}"
+
+[tools.parameters.pkg]
+type = "string"
+description = "Имя пакета"
+required = true
+
+[[tools]]
+name = "apt_remove"
+description = "Удалить пакет"
+command = "apt remove -y {pkg}"
+
+[tools.parameters.pkg]
+type = "string"
+description = "Имя пакета"
+required = true
+
+[[tools]]
+name = "apt_search"
+description = "Поиск пакета"
+command = "apt search {query}"
+
+[tools.parameters.query]
+type = "string"
+description = "Поисковый запрос"
+required = true
+
+[[tools]]
+name = "apt_list_installed"
+description = "Показать установленные пакеты"
+command = "apt list --installed"
+
+[[tools]]
+name = "dpkg_install"
+description = "Установить .deb пакет вручную"
+command = "dpkg -i {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к .deb файлу"
+required = true
+
+[[tools]]
+name = "snap_install"
+description = "Установить snap-пакет"
+command = "snap install {pkg}"
+
+[tools.parameters.pkg]
+type = "string"
+description = "Имя пакета"
+required = true
+
+[[tools]]
+name = "pip_install"
+description = "Установить Python-пакет через pip"
+command = "pip install {pkg}"
+
+[tools.parameters.pkg]
+type = "string"
+description = "Имя пакета"
+required = true
+
+[[tools]]
+name = "npm_install"
+description = "Установить Node.js пакет глобально"
+command = "npm install -g {pkg}"
+
+[tools.parameters.pkg]
+type = "string"
+description = "Имя пакета"
+required = true
+
+[[tools]]
+name = "gem_install"
+description = "Установить Ruby gem"
+command = "gem install {gem}"
+
+[tools.parameters.gem]
+type = "string"
+description = "Название gem"
+required = true
+
+# ──────────────────────────────────────────────
+#  СЛУЖБЫ (SYSTEMCTL)
+# ──────────────────────────────────────────────
+[[tools]]
+name = "systemctl_status"
+description = "Статус службы"
+command = "systemctl status {unit}"
+
+[tools.parameters.unit]
+type = "string"
+description = "Имя службы"
+required = true
+
+[[tools]]
+name = "systemctl_start"
+description = "Запустить службу"
+command = "systemctl start {unit}"
+
+[tools.parameters.unit]
+type = "string"
+description = "Имя службы"
+required = true
+
+[[tools]]
+name = "systemctl_stop"
+description = "Остановить службу"
+command = "systemctl stop {unit}"
+
+[tools.parameters.unit]
+type = "string"
+description = "Имя службы"
+required = true
+
+[[tools]]
+name = "systemctl_restart"
+description = "Перезапустить службу"
+command = "systemctl restart {unit}"
+
+[tools.parameters.unit]
+type = "string"
+description = "Имя службы"
+required = true
+
+[[tools]]
+name = "systemctl_enable"
+description = "Включить автозапуск"
+command = "systemctl enable {unit}"
+
+[tools.parameters.unit]
+type = "string"
+description = "Имя службы"
+required = true
+
+[[tools]]
+name = "systemctl_disable"
+description = "Отключить автозапуск"
+command = "systemctl disable {unit}"
+
+[tools.parameters.unit]
+type = "string"
+description = "Имя службы"
+required = true
+
+[[tools]]
+name = "systemctl_list_units"
+description = "Список всех юнитов"
+command = "systemctl list-units"
+
+# ──────────────────────────────────────────────
+#  ДИСКИ И ФАЙЛОВЫЕ СИСТЕМЫ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "fdisk"
+description = "Управление разделами (просмотр)"
+command = "fdisk -l"
+
+[[tools]]
+name = "parted"
+description = "Информация о разделах"
+command = "parted -l"
+
+[[tools]]
+name = "mkfs"
+description = "Создать файловую систему (ОПАСНО!)"
+command = "mkfs.{type} {device}"
+
+[tools.parameters.type]
+type = "string"
+description = "Тип ФС (ext4, xfs и т.д.)"
+required = true
+
+[tools.parameters.device]
+type = "string"
+description = "Устройство (/dev/sdX1)"
+required = true
+
+[[tools]]
+name = "mount"
+description = "Примонтировать устройство"
+command = "mount {device} {mountpoint}"
+
+[tools.parameters.device]
+type = "string"
+description = "Устройство"
+required = true
+
+[tools.parameters.mountpoint]
+type = "string"
+description = "Точка монтирования"
+required = true
+
+[[tools]]
+name = "umount"
+description = "Отмонтировать"
+command = "umount {target}"
+
+[tools.parameters.target]
+type = "string"
+description = "Устройство или точка монтирования"
+required = true
+
+[[tools]]
+name = "fsck"
+description = "Проверить и исправить файловую систему"
+command = "fsck -y {device}"
+
+[tools.parameters.device]
+type = "string"
+description = "Устройство"
+required = true
+
+[[tools]]
+name = "dd"
+description = "Побайтовое копирование (ОПАСНО)"
+command = "dd if={input} of={output} bs=4M status=progress"
+
+[tools.parameters.input]
+type = "string"
+description = "Источник"
+required = true
+
+[tools.parameters.output]
+type = "string"
+description = "Назначение"
+required = true
+
+# ──────────────────────────────────────────────
+#  БЕЗОПАСНОСТЬ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "ssh_keygen"
+description = "Сгенерировать SSH-ключи"
+command = "ssh-keygen -t ed25519 -f {path} -N ''"
+
+[tools.parameters.path]
+type = "string"
+description = "Путь для сохранения ключа"
+required = true
+
+[[tools]]
+name = "ssh_copy_id"
+description = "Скопировать публичный ключ на сервер"
+command = "ssh-copy-id {user}@{host}"
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = true
+
+[tools.parameters.host]
+type = "string"
+description = "Хост"
+required = true
+
+[[tools]]
+name = "chmod"
+description = "Изменить права доступа"
+command = "chmod {mode} {path}"
+
+[tools.parameters.mode]
+type = "string"
+description = "Права (например, 755)"
+required = true
+
+[tools.parameters.path]
+type = "string"
+description = "Путь"
+required = true
+
+[[tools]]
+name = "chown"
+description = "Сменить владельца"
+command = "chown {user}:{group} {path}"
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = true
+
+[tools.parameters.group]
+type = "string"
+description = "Группа"
+required = true
+
+[tools.parameters.path]
+type = "string"
+description = "Путь"
+required = true
+
+# ──────────────────────────────────────────────
+#  МОНИТОРИНГ И ЛОГИ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "journalctl"
+description = "Просмотр логов systemd"
+command = "journalctl -n {lines}"
+
+[tools.parameters.lines]
+type = "integer"
+description = "Количество строк"
+required = false
+
+[[tools]]
+name = "dmesg"
+description = "Сообщения ядра"
+command = "dmesg | tail -n 50"
+
+[[tools]]
+name = "vmstat"
+description = "Статистика виртуальной памяти"
+command = "vmstat 1 5"
+
+[[tools]]
+name = "iostat"
+description = "Статистика ввода-вывода"
+command = "iostat -x 1 3"
+
+[[tools]]
+name = "sar"
+description = "Отчёт о производительности"
+command = "sar -u 1 3"
+
+[[tools]]
+name = "nmon"
+description = "Мониторинг в реальном времени (требует nmon)"
+command = "nmon -t -s 1 -c 3"
+
+# ──────────────────────────────────────────────
+#  РАЗРАБОТКА
+# ──────────────────────────────────────────────
+[[tools]]
+name = "git_clone"
+description = "Клонировать репозиторий"
+command = "git clone {url} {dir}"
+
+[tools.parameters.url]
+type = "string"
+description = "URL репозитория"
+required = true
+
+[tools.parameters.dir]
+type = "string"
+description = "Целевая директория"
+required = false
+
+[[tools]]
+name = "git_pull"
+description = "Получить изменения из удалённого репозитория"
+command = "git -C {repo} pull"
+
+[tools.parameters.repo]
+type = "string"
+description = "Путь к локальному репозиторию"
+required = true
+
+[[tools]]
+name = "git_commit"
+description = "Создать коммит"
+command = "git -C {repo} commit -m '{message}'"
+
+[tools.parameters.repo]
+type = "string"
+description = "Путь к репозиторию"
+required = true
+
+[tools.parameters.message]
+type = "string"
+description = "Сообщение коммита"
+required = true
+
+[[tools]]
+name = "make"
+description = "Сборка проекта (выполнить make)"
+command = "make -C {dir}"
+
+[tools.parameters.dir]
+type = "string"
+description = "Директория с Makefile"
+required = true
+
+[[tools]]
+name = "gcc"
+description = "Скомпилировать C-файл"
+command = "gcc {source} -o {output}"
+
+[tools.parameters.source]
+type = "string"
+description = "Исходный файл"
+required = true
+
+[tools.parameters.output]
+type = "string"
+description = "Выходной файл"
+required = true
+
+[[tools]]
+name = "python_script"
+description = "Запустить Python-скрипт"
+command = "python3 {script}"
+
+[tools.parameters.script]
+type = "string"
+description = "Путь к скрипту"
+required = true
+
+[[tools]]
+name = "node_script"
+description = "Запустить Node.js скрипт"
+command = "node {script}"
+
+[tools.parameters.script]
+type = "string"
+description = "Путь к скрипту"
+required = true
+
+[[tools]]
+name = "docker_build"
+description = "Собрать Docker-образ"
+command = "docker build -t {tag} {path}"
+
+[tools.parameters.tag]
+type = "string"
+description = "Тег образа"
+required = true
+
+[tools.parameters.path]
+type = "string"
+description = "Путь к Dockerfile"
+required = true
+
+[[tools]]
+name = "docker_push"
+description = "Загрузить образ в реестр"
+command = "docker push {image}"
+
+[tools.parameters.image]
+type = "string"
+description = "Имя образа"
+required = true
+
+# ──────────────────────────────────────────────
+#  ИГРОВЫЕ СЕРВЕРЫ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "steamcmd_install_game"
+description = "Установить игру через SteamCMD (пример)"
+command = "steamcmd +login anonymous +force_install_dir {dir} +app_update {appid} +quit"
+
+[tools.parameters.dir]
+type = "string"
+description = "Директория установки"
+required = true
+
+[tools.parameters.appid]
+type = "integer"
+description = "AppID игры"
+required = true
+
+[[tools]]
+name = "minecraft_java"
+description = "Запустить Minecraft-сервер (Java)"
+command = "cd {dir} && java -Xmx{ram}M -jar server.jar nogui"
+
+[tools.parameters.dir]
+type = "string"
+description = "Директория сервера"
+required = true
+
+[tools.parameters.ram]
+type = "integer"
+description = "Выделенная память в МБ"
+required = true
+
+# ──────────────────────────────────────────────
+#  РЕЗЕРВНОЕ КОПИРОВАНИЕ И СИНХРОНИЗАЦИЯ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "rsync"
+description = "Синхронизировать файлы"
+command = "rsync -avz {source} {dest}"
+
+[tools.parameters.source]
+type = "string"
+description = "Источник"
+required = true
+
+[tools.parameters.dest]
+type = "string"
+description = "Назначение"
+required = true
+
+[[tools]]
+name = "rclone"
+description = "Синхронизация с облачными хранилищами"
+command = "rclone sync {source} {remote}:{path}"
+
+[tools.parameters.source]
+type = "string"
+description = "Локальный путь"
+required = true
+
+[tools.parameters.remote]
+type = "string"
+description = "Имя удалённого хранилища"
+required = true
+
+[tools.parameters.path]
+type = "string"
+description = "Путь в облаке"
+required = true
+
+# ──────────────────────────────────────────────
+#  РАЗНОЕ
+# ──────────────────────────────────────────────
+[[tools]]
+name = "cron_list"
+description = "Показать cron-задачи"
+command = "crontab -l"
+
+[[tools]]
+name = "cron_add"
+description = "Добавить cron-задачу (в конец)"
+command = "(crontab -l; echo '{schedule} {command}') | crontab -"
+
+[tools.parameters.schedule]
+type = "string"
+description = "Расписание"
+required = true
+
+[tools.parameters.command]
+type = "string"
+description = "Команда"
+required = true
+
+[[tools]]
+name = "curl"
+description = "HTTP-запрос"
+command = "curl -s {url}"
+
+[tools.parameters.url]
+type = "string"
+description = "URL"
+required = true
+
+[[tools]]
+name = "wget"
+description = "Скачать файл"
+command = "wget -q {url} -O {output}"
+
+[tools.parameters.url]
+type = "string"
+description = "URL"
+required = true
+
+[tools.parameters.output]
+type = "string"
+description = "Имя файла"
+required = false
+
+[[tools]]
+name = "lynx"
+description = "Текстовый браузер (если установлен)"
+command = "lynx -dump {url}"
+
+[tools.parameters.url]
+type = "string"
+description = "URL"
+required = true
+
+[[tools]]
+name = "history"
+description = "Показать историю команд"
+command = "history"
+
+# ──────────────────────────────────────────────
+#  ДОПОЛНИТЕЛЬНЫЕ ИНСТРУМЕНТЫ (180+)
+# ──────────────────────────────────────────────
+
+# --- Работа с текстом и данными ---
+[[tools]]
+name = "awk_print"
+description = "Вывести определённый столбец из вывода или файла (awk '{print $1}')"
+command = "awk '{print ${col}}' {file}"
+
+[tools.parameters.col]
+type = "integer"
+description = "Номер столбца"
+required = true
+
+[tools.parameters.file]
+type = "string"
+description = "Файл (если не указан, читает stdin)"
+required = false
+
+[[tools]]
+name = "sed_replace"
+description = "Заменить текст в файле (sed -i 's/old/new/g')"
+command = "sed -i 's/{old}/{new}/g' {file}"
+
+[tools.parameters.old]
+type = "string"
+description = "Что заменить"
+required = true
+
+[tools.parameters.new]
+type = "string"
+description = "На что заменить"
+required = true
+
+[tools.parameters.file]
+type = "string"
+description = "Файл"
+required = true
+
+[[tools]]
+name = "tr"
+description = "Заменить или удалить символы (echo 'text' | tr 'a-z' 'A-Z')"
+command = "echo '{text}' | tr '{from}' '{to}'"
+
+[tools.parameters.text]
+type = "string"
+description = "Входной текст"
+required = true
+
+[tools.parameters.from]
+type = "string"
+description = "Набор символов для замены"
+required = true
+
+[tools.parameters.to]
+type = "string"
+description = "Набор символов-замен"
+required = true
+
+[[tools]]
+name = "cut"
+description = "Вырезать поля из строк (по разделителю)"
+command = "cut -d'{delim}' -f{fields} {file}"
+
+[tools.parameters.delim]
+type = "string"
+description = "Разделитель"
+required = true
+
+[tools.parameters.fields]
+type = "string"
+description = "Номера полей (например, 1,3)"
+required = true
+
+[tools.parameters.file]
+type = "string"
+description = "Файл"
+required = false
+
+[[tools]]
+name = "sort_data"
+description = "Отсортировать строки файла"
+command = "sort {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Файл"
+required = true
+
+[[tools]]
+name = "uniq_data"
+description = "Оставить только уникальные строки (обычно после sort)"
+command = "uniq {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Файл"
+required = true
+
+[[tools]]
+name = "wc_all"
+description = "Подсчитать строки, слова, байты"
+command = "wc {file}"
+
+[tools.parameters.file]
+type = "string"
+description = "Файл"
+required = true
+
+[[tools]]
+name = "tee"
+description = "Записать вывод в файл и одновременно показать на экране"
+command = "echo '{text}' | tee {file}"
+
+[tools.parameters.text]
+type = "string"
+description = "Текст"
+required = true
+
+[tools.parameters.file]
+type = "string"
+description = "Файл"
+required = true
+
+# --- Управление пакетами (доп.) ---
+[[tools]]
+name = "apt_autoremove"
+description = "Удалить ненужные пакеты"
+command = "apt autoremove -y"
+
+[[tools]]
+name = "apt_clean"
+description = "Очистить кеш пакетов"
+command = "apt clean"
+
+[[tools]]
+name = "dpkg_list"
+description = "Показать список установленных .deb пакетов"
+command = "dpkg -l"
+
+[[tools]]
+name = "snap_list"
+description = "Показать установленные snap-пакеты"
+command = "snap list"
+
+[[tools]]
+name = "flatpak_list"
+description = "Показать установленные flatpak-приложения"
+command = "flatpak list"
+
+[[tools]]
+name = "flatpak_install"
+description = "Установить flatpak-приложение"
+command = "flatpak install -y {app}"
+
+[tools.parameters.app]
+type = "string"
+description = "Идентификатор приложения"
+required = true
+
+# --- Системные службы и управление ---
+[[tools]]
+name = "systemctl_list_failed"
+description = "Показать упавшие юниты"
+command = "systemctl --failed"
+
+[[tools]]
+name = "journalctl_boot"
+description = "Логи текущей загрузки"
+command = "journalctl -b"
+
+[[tools]]
+name = "timedatectl"
+description = "Управление датой/временем и синхронизацией"
+command = "timedatectl status"
+
+[[tools]]
+name = "hostnamectl"
+description = "Информация о хосте и его имени"
+command = "hostnamectl"
+
+[[tools]]
+name = "localectl"
+description = "Настройки локали"
+command = "localectl status"
+
+[[tools]]
+name = "loginctl"
+description = "Управление сессиями пользователей"
+command = "loginctl list-sessions"
+
+# --- Мониторинг и производительность ---
+[[tools]]
+name = "htop"
+description = "Интерактивный монитор процессов (однократный вывод)"
+command = "htop -b -n 1"
+
+[[tools]]
+name = "iotop"
+description = "Монитор ввода-вывода (требует root)"
+command = "iotop -b -n 1"
+
+[[tools]]
+name = "nethogs"
+description = "Мониторинг трафика по процессам"
+command = "nethogs -t -c 3"
+
+[[tools]]
+name = "iftop"
+description = "График сетевого трафика в реальном времени (текст)"
+command = "iftop -t -s 3"
+
+[[tools]]
+name = "vmstat_short"
+description = "Статистика виртуальной памяти"
+command = "vmstat 1 3"
+
+[[tools]]
+name = "iostat_short"
+description = "Статистика ввода-вывода"
+command = "iostat -x 1 3"
+
+[[tools]]
+name = "sar_cpu"
+description = "Отчёт о загрузке CPU (sar -u)"
+command = "sar -u 1 3"
+
+[[tools]]
+name = "free_m"
+description = "Память в мегабайтах"
+command = "free -m"
+
+# --- Сеть (доп.) ---
+[[tools]]
+name = "ip_route"
+description = "Таблица маршрутизации"
+command = "ip route show"
+
+[[tools]]
+name = "ip_neigh"
+description = "ARP-таблица"
+command = "ip neigh show"
+
+[[tools]]
+name = "ethtool"
+description = "Информация о сетевом интерфейсе"
+command = "ethtool {iface}"
+
+[tools.parameters.iface]
+type = "string"
+description = "Интерфейс (например, eth0)"
+required = true
+
+[[tools]]
+name = "iwconfig"
+description = "Настройки беспроводных интерфейсов"
+command = "iwconfig"
+
+[[tools]]
+name = "mtr"
+description = "Комбинация ping и traceroute"
+command = "mtr -r -c 3 {host}"
+
+[tools.parameters.host]
+type = "string"
+description = "Хост"
+required = true
+
+[[tools]]
+name = "nc"
+description = "Netcat — проверка доступности порта"
+command = "nc -zv {host} {port}"
+
+[tools.parameters.host]
+type = "string"
+description = "Хост"
+required = true
+
+[tools.parameters.port]
+type = "integer"
+description = "Порт"
+required = true
+
+[[tools]]
+name = "curl_download"
+description = "Скачать файл через curl"
+command = "curl -L -o {output} {url}"
+
+[tools.parameters.url]
+type = "string"
+description = "URL"
+required = true
+
+[tools.parameters.output]
+type = "string"
+description = "Имя выходного файла"
+required = true
+
+[[tools]]
+name = "wget_download"
+description = "Скачать файл через wget"
+command = "wget -O {output} {url}"
+
+[tools.parameters.url]
+type = "string"
+description = "URL"
+required = true
+
+[tools.parameters.output]
+type = "string"
+description = "Имя выходного файла"
+required = true
+
+# --- Безопасность (доп.) ---
+[[tools]]
+name = "fail2ban_status_all"
+description = "Статус всех jail Fail2Ban"
+command = "fail2ban-client status"
+
+[[tools]]
+name = "rkhunter_check"
+description = "Проверка на руткиты (если установлен rkhunter)"
+command = "rkhunter --check --skip-keypress 2>&1 | tail -20"
+
+[[tools]]
+name = "lynis_audit"
+description = "Аудит безопасности Lynis (если установлен)"
+command = "lynis audit system --quick 2>&1 | tail -30"
+
+[[tools]]
+name = "passwd_status"
+description = "Статус пароля пользователя"
+command = "passwd -S {user}"
+
+[tools.parameters.user]
+type = "string"
+description = "Имя пользователя"
+required = true
+
+[[tools]]
+name = "faillock"
+description = "Показать неудачные попытки входа (PAM)"
+command = "faillock --user {user}"
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = false
+
+[[tools]]
+name = "visudo_check"
+description = "Проверить синтаксис /etc/sudoers (нужен root)"
+command = "visudo -c"
+
+# --- Файловые системы и хранилище ---
+[[tools]]
+name = "mount_list"
+description = "Показать примонтированные файловые системы"
+command = "mount"
+
+[[tools]]
+name = "blkid"
+description = "Показать UUID и тип файловых систем"
+command = "blkid"
+
+[[tools]]
+name = "lvm"
+description = "Информация о LVM (pvs, vgs, lvs)"
+command = "pvs; vgs; lvs"
+
+[[tools]]
+name = "mdadm_detail"
+description = "Информация о RAID-массиве"
+command = "mdadm --detail {device}"
+
+[tools.parameters.device]
+type = "string"
+description = "Устройство RAID (например, /dev/md0)"
+required = true
+
+[[tools]]
+name = "smartctl"
+description = "SMART-информация о диске"
+command = "smartctl -a {device}"
+
+[tools.parameters.device]
+type = "string"
+description = "Диск (например, /dev/sda)"
+required = true
+
+[[tools]]
+name = "badblocks"
+description = "Проверка диска на плохие блоки (только чтение)"
+command = "badblocks -sv {device}"
+
+[tools.parameters.device]
+type = "string"
+description = "Устройство"
+required = true
+
+# --- Управление процессами ---
+[[tools]]
+name = "nohup"
+description = "Запустить команду в фоне, игнорируя HUP"
+command = "nohup {command} > /dev/null 2>&1 &"
+
+[tools.parameters.command]
+type = "string"
+description = "Команда"
+required = true
+
+[[tools]]
+name = "screen"
+description = "Создать сессию screen (фоновое выполнение)"
+command = "screen -dmS {session} {command}"
+
+[tools.parameters.session]
+type = "string"
+description = "Имя сессии"
+required = true
+
+[tools.parameters.command]
+type = "string"
+description = "Команда"
+required = true
+
+[[tools]]
+name = "tmux"
+description = "Создать сессию tmux"
+command = "tmux new -d -s {session} '{command}'"
+
+[tools.parameters.session]
+type = "string"
+description = "Имя сессии"
+required = true
+
+[tools.parameters.command]
+type = "string"
+description = "Команда"
+required = true
+
+# --- Пользователи и группы (доп.) ---
+[[tools]]
+name = "id"
+description = "Показать UID, GID и группы пользователя"
+command = "id {user}"
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = false
+
+[[tools]]
+name = "groups"
+description = "Показать группы пользователя"
+command = "groups {user}"
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = false
+
+[[tools]]
+name = "chage"
+description = "Информация о сроке действия пароля"
+command = "chage -l {user}"
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = true
+
+# --- Системное администрирование ---
+[[tools]]
+name = "uptime_short"
+description = "Только время работы"
+command = "uptime -p"
+
+[[tools]]
+name = "dmesg_tail"
+description = "Последние 20 сообщений ядра"
+command = "dmesg | tail -20"
+
+[[tools]]
+name = "sysctl_list"
+description = "Показать все параметры ядра"
+command = "sysctl -a"
+
+[[tools]]
+name = "lsmod"
+description = "Загруженные модули ядра"
+command = "lsmod"
+
+[[tools]]
+name = "modinfo"
+description = "Информация о модуле ядра"
+command = "modinfo {module}"
+
+[tools.parameters.module]
+type = "string"
+description = "Имя модуля"
+required = true
+
+[[tools]]
+name = "modprobe"
+description = "Загрузить модуль ядра"
+command = "modprobe {module}"
+
+[tools.parameters.module]
+type = "string"
+description = "Имя модуля"
+required = true
+
+[[tools]]
+name = "rmmod"
+description = "Выгрузить модуль ядра"
+command = "rmmod {module}"
+
+[tools.parameters.module]
+type = "string"
+description = "Имя модуля"
+required = true
+
+# --- Управление питанием ---
+[[tools]]
+name = "shutdown"
+description = "Выключить систему"
+command = "shutdown -h now"
+
+[[tools]]
+name = "reboot"
+description = "Перезагрузить систему"
+command = "reboot"
+
+[[tools]]
+name = "poweroff"
+description = "Выключить питание"
+command = "poweroff"
+
+# --- Работа с базами данных (доп.) ---
+[[tools]]
+name = "mysql_import"
+description = "Импортировать SQL-файл в базу"
+command = "mysql -u {user} -p'{password}' {db} < {file}"
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь БД"
+required = true
+
+[tools.parameters.password]
+type = "string"
+description = "Пароль"
+required = true
+
+[tools.parameters.db]
+type = "string"
+description = "Имя базы"
+required = true
+
+[tools.parameters.file]
+type = "string"
+description = "Путь к SQL-файлу"
+required = true
+
+[[tools]]
+name = "pg_dump"
+description = "Создать дамп PostgreSQL"
+command = "sudo -u postgres pg_dump {db} > {file}"
+
+[tools.parameters.db]
+type = "string"
+description = "База данных"
+required = true
+
+[tools.parameters.file]
+type = "string"
+description = "Выходной файл"
+required = true
+
+# --- Веб-серверы и сертификаты ---
+[[tools]]
+name = "certbot_install"
+description = "Установить Certbot (если ещё не)"
+command = "apt install -y certbot"
+
+[[tools]]
+name = "certbot_certonly"
+description = "Получить SSL-сертификат (standalone)"
+command = "certbot certonly --standalone -d {domain} --non-interactive --agree-tos -m {email}"
+
+[tools.parameters.domain]
+type = "string"
+description = "Домен"
+required = true
+
+[tools.parameters.email]
+type = "string"
+description = "Email для уведомлений"
+required = true
+
+[[tools]]
+name = "certbot_renew"
+description = "Обновить все сертификаты"
+command = "certbot renew"
+
+# --- Разработка (доп.) ---
+[[tools]]
+name = "docker_rmi"
+description = "Удалить Docker-образ"
+command = "docker rmi {image}"
+
+[tools.parameters.image]
+type = "string"
+description = "Имя образа"
+required = true
+
+[[tools]]
+name = "docker_prune"
+description = "Очистить неиспользуемые Docker-объекты"
+command = "docker system prune -f"
+
+[[tools]]
+name = "git_status"
+description = "Статус репозитория"
+command = "git -C {repo} status"
+
+[tools.parameters.repo]
+type = "string"
+description = "Путь к репозиторию"
+required = true
+
+[[tools]]
+name = "git_log"
+description = "Показать историю коммитов"
+command = "git -C {repo} log --oneline -n 10"
+
+[tools.parameters.repo]
+type = "string"
+description = "Путь к репозиторию"
+required = true
+
+[[tools]]
+name = "pip_freeze"
+description = "Показать установленные Python-пакеты и версии"
+command = "pip freeze"
+
+[[tools]]
+name = "npm_list"
+description = "Показать глобальные npm-пакеты"
+command = "npm list -g --depth=0"
+
+# --- Резервное копирование и синхронизация ---
+[[tools]]
+name = "scp_upload"
+description = "Загрузить файл на удалённый сервер (scp)"
+command = "scp -o StrictHostKeyChecking=no -i {key} {file} {user}@{host}:{remote_path}"
+
+[tools.parameters.key]
+type = "string"
+description = "Путь к приватному ключу"
+required = true
+
+[tools.parameters.file]
+type = "string"
+description = "Локальный файл"
+required = true
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = true
+
+[tools.parameters.host]
+type = "string"
+description = "Хост"
+required = true
+
+[tools.parameters.remote_path]
+type = "string"
+description = "Путь на удалённой машине"
+required = true
+
+[[tools]]
+name = "scp_download"
+description = "Скачать файл с удалённого сервера"
+command = "scp -o StrictHostKeyChecking=no -i {key} {user}@{host}:{remote_path} {local_path}"
+
+[tools.parameters.key]
+type = "string"
+description = "Путь к ключу"
+required = true
+
+[tools.parameters.user]
+type = "string"
+description = "Пользователь"
+required = true
+
+[tools.parameters.host]
+type = "string"
+description = "Хост"
+required = true
+
+[tools.parameters.remote_path]
+type = "string"
+description = "Удалённый путь"
+required = true
+
+[tools.parameters.local_path]
+type = "string"
+description = "Локальный путь"
+required = true
+
+# ──────────────────────────────────────────────
+#  УНИВЕРСАЛЬНАЯ КОМАНДА (должна быть последней)
+# ──────────────────────────────────────────────
+[[tools]]
+name = "run_command"
+description = "Выполнить произвольную shell-команду"
+command = "{command}"
+
+[tools.parameters.command]
+type = "string"
+description = "Команда"
+required = true
