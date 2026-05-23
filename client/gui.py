@@ -195,19 +195,31 @@ def install_server_to_debian(host, port, user, password, key_path, progress_call
             progress_callback(f"Installation failed: {e}")
         return False, str(e)
 
-# ---------- MCPClient ----------
+# ---------- MCPClient с авто-переподключением ----------
 class MCPClient:
-    def __init__(self, ssh_user, ssh_host, ssh_port, command, key_path=None):
-        if not ssh_host:
+    def __init__(self, ssh_user, ssh_host, ssh_port, command, key_path=None, max_retries=3):
+        self.ssh_user = ssh_user
+        self.ssh_host = ssh_host
+        self.ssh_port = ssh_port
+        self.command = command
+        self.key_path = key_path
+        self.max_retries = max_retries
+        self.process = None
+        self.request_id = 0
+        self.tools = []
+        self._start_process()
+
+    def _start_process(self):
+        if not self.ssh_host:
             raise ValueError("SSH host не задан")
-        ssh_target = f"{ssh_user}@{ssh_host}"
+        ssh_target = f"{self.ssh_user}@{self.ssh_host}"
         ssh_args = [
             "ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=no",
-            "-p", str(ssh_port)
+            "-p", str(self.ssh_port)
         ]
-        if key_path and os.path.exists(key_path):
-            ssh_args.extend(["-i", key_path])
-        ssh_args.extend([ssh_target, command])
+        if self.key_path and os.path.exists(self.key_path):
+            ssh_args.extend(["-i", self.key_path])
+        ssh_args.extend([ssh_target, self.command])
 
         startupinfo = None
         if sys.platform == "win32":
@@ -229,11 +241,21 @@ class MCPClient:
             startupinfo=startupinfo,
             creationflags=creationflags
         )
-        self.request_id = 0
-        self.tools = []
         self._initialize()
 
-    def _send_request(self, method, params=None):
+    def _reconnect(self):
+        """Закрывает текущий процесс и создаёт новый."""
+        try:
+            self.process.terminate()
+            self.process.wait(timeout=5)
+        except:
+            pass
+        # Небольшая задержка перед переподключением
+        import time
+        time.sleep(1)
+        self._start_process()
+
+    def _send_request(self, method, params=None, retry_count=0):
         self.request_id += 1
         request = {
             "jsonrpc": "2.0",
@@ -245,11 +267,24 @@ class MCPClient:
         try:
             self.process.stdin.write(req_str)
             self.process.stdin.flush()
-        except BrokenPipeError:
-            stderr_output = self.process.stderr.read()
-            raise Exception(f"Процесс завершился неожиданно. stderr:\n{stderr_output}")
+        except (BrokenPipeError, OSError) as e:
+            if retry_count < self.max_retries:
+                print(f"Соединение потеряно, попытка переподключения {retry_count+1}/{self.max_retries}...")
+                self._reconnect()
+                return self._send_request(method, params, retry_count + 1)
+            else:
+                raise Exception(f"Не удалось восстановить соединение после {self.max_retries} попыток")
 
-        response_line = self.process.stdout.readline()
+        try:
+            response_line = self.process.stdout.readline()
+        except (BrokenPipeError, OSError):
+            if retry_count < self.max_retries:
+                print(f"Ошибка чтения, попытка переподключения {retry_count+1}/{self.max_retries}...")
+                self._reconnect()
+                return self._send_request(method, params, retry_count + 1)
+            else:
+                raise Exception("Не удалось восстановить соединение после потери связи")
+
         if not response_line:
             stderr_output = self.process.stderr.read()
             raise Exception(f"Нет ответа от MCP сервера. stderr:\n{stderr_output}")
@@ -260,8 +295,14 @@ class MCPClient:
 
     def _send_notification(self, method, params):
         notif = {"jsonrpc": "2.0", "method": method, "params": params}
-        self.process.stdin.write(json.dumps(notif) + "\n")
-        self.process.stdin.flush()
+        try:
+            self.process.stdin.write(json.dumps(notif) + "\n")
+            self.process.stdin.flush()
+        except (BrokenPipeError, OSError):
+            # Для уведомлений молча переподключаемся
+            self._reconnect()
+            self.process.stdin.write(json.dumps(notif) + "\n")
+            self.process.stdin.flush()
 
     def _initialize(self):
         self._send_request("initialize", {
@@ -284,6 +325,9 @@ class MCPClient:
         if self.process:
             self.process.terminate()
             self.process.wait(timeout=5)
+
+# ---------- Остальной код (без изменений, кроме process_response) ----------
+# ... (весь код выше остаётся, за исключением process_response, который будет обновлён)
 
 def convert_tools_for_openai(mcp_tools, server_name, disabled_set=None):
     if disabled_set is None:
@@ -424,6 +468,16 @@ def bind_universal_copy_paste(widget):
                 widget.event_generate("<<SelectAll>>")
     widget.bind("<Control-KeyPress>", handle, add="+")
 
+def bind_right_click_menu(widget):
+    """Контекстное меню с копированием/вставкой (не зависит от раскладки)."""
+    menu = tk.Menu(widget, tearoff=0)
+    menu.add_command(label="Copy", command=lambda: widget.event_generate("<<Copy>>"))
+    menu.add_command(label="Paste", command=lambda: widget.event_generate("<<Paste>>"))
+    menu.add_command(label="Cut", command=lambda: widget.event_generate("<<Cut>>"))
+    def show_menu(event):
+        menu.tk_popup(event.x_root, event.y_root)
+    widget.bind("<Button-3>", show_menu)
+
 # ---------- Окно управления инструментами ----------
 class ToolsWindow(tk.Toplevel):
     def __init__(self, parent, tools, disabled_set, on_save_callback):
@@ -442,6 +496,7 @@ class ToolsWindow(tk.Toplevel):
         self.search_entry = ttk.Entry(search_frame, textvariable=self.search_var)
         self.search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         bind_universal_copy_paste(self.search_entry)
+        bind_right_click_menu(self.search_entry)
         self.search_var.trace_add("write", lambda *args: self._apply_filter())
 
         tree_frame = ttk.Frame(self)
@@ -555,12 +610,14 @@ class SettingsWindow(tk.Toplevel):
         self.base_url_entry = ttkb.Entry(self.base_url_frame, textvariable=self.base_url_var, width=35)
         self.base_url_entry.pack(side=tk.LEFT, padx=5)
         bind_universal_copy_paste(self.base_url_entry)
+        bind_right_click_menu(self.base_url_entry)
 
         ttkb.Label(provider_frame, text="API Key:").pack(pady=5)
         self.api_key_var = tk.StringVar(value=config["api_key"])
         self.api_key_entry = ttkb.Entry(provider_frame, textvariable=self.api_key_var, width=45, show="*")
         self.api_key_entry.pack(pady=5)
         bind_universal_copy_paste(self.api_key_entry)
+        bind_right_click_menu(self.api_key_entry)
 
         ttkb.Label(provider_frame, text="Model:").pack(pady=5)
         model_frame = ttkb.Frame(provider_frame)
@@ -596,12 +653,14 @@ class SettingsWindow(tk.Toplevel):
         self.server_name_entry = ttkb.Entry(name_frame, textvariable=self.server_name_var, width=30)
         self.server_name_entry.pack(side=tk.LEFT, padx=5)
         bind_universal_copy_paste(self.server_name_entry)
+        bind_right_click_menu(self.server_name_entry)
 
         ttkb.Label(ssh_frame, text="Host (IP):").pack(pady=5)
         self.ssh_host_var = tk.StringVar()
         self.ssh_host_entry = ttkb.Entry(ssh_frame, textvariable=self.ssh_host_var, width=40)
         self.ssh_host_entry.pack(pady=5)
         bind_universal_copy_paste(self.ssh_host_entry)
+        bind_right_click_menu(self.ssh_host_entry)
 
         port_user_frame = ttkb.Frame(ssh_frame)
         port_user_frame.pack(pady=5, fill=tk.X)
@@ -610,11 +669,13 @@ class SettingsWindow(tk.Toplevel):
         self.port_entry = ttkb.Entry(port_user_frame, textvariable=self.ssh_port_var, width=8)
         self.port_entry.pack(side=tk.LEFT, padx=5)
         bind_universal_copy_paste(self.port_entry)
+        bind_right_click_menu(self.port_entry)
         ttkb.Label(port_user_frame, text="Username:").pack(side=tk.LEFT, padx=(15, 0))
         self.ssh_user_var = tk.StringVar()
         self.user_entry = ttkb.Entry(port_user_frame, textvariable=self.ssh_user_var, width=20)
         self.user_entry.pack(side=tk.LEFT, padx=5)
         bind_universal_copy_paste(self.user_entry)
+        bind_right_click_menu(self.user_entry)
 
         ttkb.Label(ssh_frame, text="Private key path:").pack(pady=5)
         key_frame = ttkb.Frame(ssh_frame)
@@ -623,6 +684,7 @@ class SettingsWindow(tk.Toplevel):
         self.key_entry = ttkb.Entry(key_frame, textvariable=self.ssh_key_var, width=40)
         self.key_entry.pack(side=tk.LEFT)
         bind_universal_copy_paste(self.key_entry)
+        bind_right_click_menu(self.key_entry)
         ttkb.Button(key_frame, text="Browse", command=self._browse_key).pack(side=tk.LEFT, padx=5)
         ttkb.Button(key_frame, text="Generate Key", command=self._generate_ssh_key).pack(side=tk.LEFT, padx=5)
 
@@ -917,7 +979,7 @@ class MCPGuiApp:
         self.settings_window = None
 
         # Множественные клиенты
-        self.clients = {}  # server_name -> MCPClient
+        self.clients = {}
         self.tools_openai = []
         self.tools_anthropic = []
         self.ai_client = None
@@ -958,6 +1020,7 @@ class MCPGuiApp:
         self.chat_listbox = tk.Listbox(self.left_frame, selectmode=tk.SINGLE, exportselection=False)
         self.chat_listbox.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.chat_listbox.bind('<<ListboxSelect>>', self.on_chat_selected)
+        self.chat_listbox.bind("<Button-3>", self._on_chat_right_click)
 
         # Правая часть (чат)
         right_frame = ttkb.Frame(main_container)
@@ -991,6 +1054,8 @@ class MCPGuiApp:
 
         bind_universal_copy_paste(self.chat_area.text)
         bind_universal_copy_paste(self.input_text)
+        bind_right_click_menu(self.chat_area.text)
+        bind_right_click_menu(self.input_text)
         self.input_text.bind("<Return>", self.on_input_return)
 
         self.status_var = tk.StringVar(value="Disconnected")
@@ -1020,13 +1085,11 @@ class MCPGuiApp:
         self.server_listbox.delete(0, tk.END)
         for name in self.servers:
             self.server_listbox.insert(tk.END, name)
-        # Выделяем все серверы, у которых есть host
         for i, name in enumerate(self.servers):
             if self.servers[name].get("ssh_host", ""):
                 self.server_listbox.selection_set(i)
 
     def connect_all_servers(self):
-        # Закрываем старые соединения
         for client in self.clients.values():
             try:
                 client.close()
@@ -1036,7 +1099,6 @@ class MCPGuiApp:
         self.tools_openai = []
         self.tools_anthropic = []
 
-        # Создаём AI-клиент
         if self.provider == "anthropic":
             if not ANTHROPIC_AVAILABLE:
                 self.update_status("Anthropic SDK not installed")
@@ -1044,10 +1106,8 @@ class MCPGuiApp:
             self.ai_client = Anthropic(api_key=self.api_key)
         else:
             self.ai_client = OpenAI(api_key=self.api_key, base_url=self.base_url,
-                                    http_client=httpx.Client(
-                                        headers={"Content-Type": "application/json; charset=utf-8"}))
+                                    http_client=httpx.Client(headers={"Content-Type": "application/json; charset=utf-8"}))
 
-        # Подключаемся ко всем серверам, у которых заполнен host
         connected = 0
         for name, server in self.servers.items():
             host = server.get("ssh_host", "")
@@ -1062,7 +1122,6 @@ class MCPGuiApp:
                     server.get("ssh_key_path", "")
                 )
                 self.clients[name] = client
-                # Добавляем инструменты
                 if self.provider == "anthropic":
                     self.tools_anthropic.extend(
                         convert_tools_for_anthropic(client.tools, name, self.disabled_tools)
@@ -1076,13 +1135,11 @@ class MCPGuiApp:
                 print(f"Failed to connect to {name}: {e}")
 
         if connected > 0:
-            self.update_status(
-                f"Connected ({connected} servers, {len(self.tools_openai) + len(self.tools_anthropic)} tools)")
+            self.update_status(f"Connected ({connected} servers, {len(self.tools_openai) + len(self.tools_anthropic)} tools)")
         else:
             self.update_status("No servers connected")
 
     def on_server_selected(self, event):
-        # Множественный выбор — пока ничего не делаем, все серверы уже подключены
         pass
 
     def refresh_chat_list(self):
@@ -1137,6 +1194,38 @@ class MCPGuiApp:
         chat_id = chat_name + ".json"
         if chat_id != self.current_chat_id:
             self.load_chat_by_id(chat_id)
+
+    def _on_chat_right_click(self, event):
+        menu = tk.Menu(self.root, tearoff=0)
+        menu.add_command(label="Rename", command=self.rename_chat)
+        try:
+            menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            menu.grab_release()
+
+    def rename_chat(self):
+        selection = self.chat_listbox.curselection()
+        if not selection:
+            return
+        old_name = self.chat_listbox.get(selection[0])
+        old_id = old_name + ".json"
+        new_name = simpledialog.askstring("Rename Chat", "New name:", initialvalue=old_name)
+        if not new_name or new_name == old_name:
+            return
+        new_id = new_name + ".json"
+        old_path = get_chat_path(old_id)
+        new_path = get_chat_path(new_id)
+        if os.path.exists(new_path):
+            messagebox.showerror("Error", "Chat with this name already exists.")
+            return
+        try:
+            os.rename(old_path, new_path)
+            if self.current_chat_id == old_id:
+                self.current_chat_id = new_id
+                save_config(active_chat=new_id)
+            self.refresh_chat_list()
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to rename: {e}")
 
     def update_status(self, text):
         self.status_var.set(text)
@@ -1229,7 +1318,6 @@ class MCPGuiApp:
         if not self.clients:
             messagebox.showwarning("No connection", "Сначала подключитесь к серверу.")
             return
-        # Собираем все инструменты со всех серверов
         all_tools = []
         for name, client in self.clients.items():
             for tool in client.tools:
@@ -1242,7 +1330,6 @@ class MCPGuiApp:
     def on_tools_save(self, disabled_list):
         self.disabled_tools = set(disabled_list)
         save_config(disabled_tools=list(self.disabled_tools))
-        # Перестраиваем инструменты
         self.tools_openai = []
         self.tools_anthropic = []
         for name, client in self.clients.items():
@@ -1254,8 +1341,7 @@ class MCPGuiApp:
                 self.tools_openai.extend(
                     convert_tools_for_openai(client.tools, name, self.disabled_tools)
                 )
-        self.update_status(
-            f"Connected ({len(self.clients)} servers, {len(self.tools_openai) + len(self.tools_anthropic)} tools)")
+        self.update_status(f"Connected ({len(self.clients)} servers, {len(self.tools_openai) + len(self.tools_anthropic)} tools)")
 
     def on_settings_save(self, provider, api_key, model, base_url, servers, active_server):
         self.provider = provider
@@ -1325,19 +1411,24 @@ class MCPGuiApp:
                     if response.stop_reason == "tool_use":
                         for block in response.content:
                             if block.type == "tool_use":
-                                full_name = block.name  # server__tool
+                                full_name = block.name
                                 parts = full_name.split("__", 1)
                                 server_name = parts[0]
                                 tool_name = parts[1] if len(parts) > 1 else full_name
                                 func_args = block.input
                                 result = None
-                                if server_name in self.clients:
+                                # Проверка на отключённый инструмент
+                                if tool_name in self.disabled_tools:
+                                    full_text = f"Инструмент '{tool_name}' отключён."
+                                elif server_name in self.clients:
                                     result = self.clients[server_name].call_tool(tool_name, func_args)
-                                full_text = ""
-                                if result and "content" in result:
-                                    for part in result["content"]:
-                                        if part.get("type") == "text":
-                                            full_text += part["text"]
+                                    full_text = ""
+                                    if result and "content" in result:
+                                        for part in result["content"]:
+                                            if part.get("type") == "text":
+                                                full_text += part["text"]
+                                else:
+                                    full_text = f"Сервер '{server_name}' не найден."
                                 short_text = full_text[:MAX_TOOL_OUTPUT_CHARS]
                                 if len(full_text) > MAX_TOOL_OUTPUT_CHARS:
                                     short_text += "\n... [truncated]"
@@ -1384,16 +1475,21 @@ class MCPGuiApp:
                             except:
                                 func_args = {}
                             result = None
-                            if server_name in self.clients:
+                            # Проверка на отключённый инструмент
+                            if tool_name in self.disabled_tools:
+                                full_text = f"Инструмент '{tool_name}' отключён."
+                            elif server_name in self.clients:
                                 try:
                                     result = self.clients[server_name].call_tool(tool_name, func_args)
+                                    full_text = ""
+                                    if result and "content" in result:
+                                        for block in result["content"]:
+                                            if block.get("type") == "text":
+                                                full_text += block["text"]
                                 except Exception as e:
-                                    result = {"content": [{"type": "text", "text": str(e)}]}
-                            full_text = ""
-                            if result and "content" in result:
-                                for block in result["content"]:
-                                    if block.get("type") == "text":
-                                        full_text += block["text"]
+                                    full_text = f"Ошибка выполнения: {e}"
+                            else:
+                                full_text = f"Сервер '{server_name}' не найден."
 
                             short_text = full_text[:MAX_TOOL_OUTPUT_CHARS]
                             if len(full_text) > MAX_TOOL_OUTPUT_CHARS:
