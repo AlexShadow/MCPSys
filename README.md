@@ -70,6 +70,8 @@ cd mcp-server-rust
 cargo build --release
 ```
 # Бинарник: target/release/mcp-server
+можно вставить на сервер вручную по пути /opt/mcp-server#
+mcp-server
 tools.toml
 Файл с описанием инструментов лежит в /opt/mcp-server/tools.toml на сервере. Его можно редактировать вручную для добавления новых команд.
 
