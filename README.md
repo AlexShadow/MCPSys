@@ -1,88 +1,114 @@
-# MCPSys — AI‑управление Debian через MCP
+# MCPSys — AI‑администратор Linux через MCP
 
-MCPSys (MCP System) — это бесплатный графический клиент для управления серверами Debian с помощью искусственного интеллекта. Программа позволяет **администрировать сервер на естественном языке**, используя DeepSeek, OpenAI, Anthropic Claude и другие LLM.
+MCPSys (MCP System) — это бесплатный графический клиент для управления
+серверами Linux с помощью искусственного интеллекта. Программа позволяет
+**администрировать любую Linux‑систему на естественном языке**,
+используя DeepSeek, OpenAI, Anthropic Claude и другие LLM.
 
-<img width="854" height="582" alt="Setting" src="https://github.com/user-attachments/assets/f486514f-c75c-4e1f-967e-8419d54a740c" />
-<img width="854" height="582" alt="Connect" src="https://github.com/user-attachments/assets/ee6f5e89-ff63-4607-9cc7-ef7c3d208bc6" />
+![Settings](https://github.com/user-attachments/assets/f486514f-c75c-4e1f-967e-8419d54a740c)
+![Connect](https://github.com/user-attachments/assets/ee6f5e89-ff63-4607-9cc7-ef7c3d208bc6)
 
-Вам больше не нужно помнить сотни консольных команд — просто опишите задачу, и ИИ выполнит её.
+Вам больше не нужно помнить сотни консольных команд — просто опишите задачу,
+и ИИ выполнит её на вашем сервере.
 
 ## 🚀 Возможности
 
-- **199+ встроенных инструментов** для управления Debian: пакеты, службы, сеть, пользователи, Docker, базы данных, веб‑серверы, безопасность и многое другое.
+- **476+ кроссплатформенных инструментов** — автоматически определяют
+  пакетный менеджер (apt/dnf/pacman/apk/zypper), систему инициализации
+  (systemd/openrc/sysv) и фаервол (ufw/firewalld/nft/iptables).
+  Работают на **Debian, Ubuntu, Fedora, Arch, Alpine, openSUSE** и других.
 - **Единый бинарник сервера** на Rust — не требует Python или других зависимостей.
-- **Автоустановка сервера** на удалённый Debian одной кнопкой (через SFTP).
+- **Автоустановка сервера** на удалённый Linux одной кнопкой (через SFTP).
 - **Поддержка разных AI‑провайдеров**:
   - DeepSeek (V4 Pro, Chat, Reasoner)
   - OpenAI (GPT‑4o, GPT‑4, GPT‑3.5)
   - Anthropic (Claude 3.5 Sonnet, Claude 3 Opus, Haiku)
-  - Groq, Together, OpenRouter, Ollama, Custom (OpenAI‑совместимые)
-- **Гибкое управление инструментами**: таблица с поиском, включение/отключение отдельных команд.
-- **Тёмная тема** и удобный многострочный ввод.
-- **Сохранение настроек** (API‑ключ, SSH‑доступ, отключённые инструменты) в `config.json`.
-- **Работа без консоли** — можно собрать в один EXE‑файл для Windows.
+  - Groq, Together, OpenRouter, Ollama, Custom (OpenAI‑совместимые, локальные LLM)
+- **Множественные серверы** — одновременное подключение к нескольким машинам,
+  AI видит их все и может выполнять кросс‑серверные команды.
+- **Гибкое управление инструментами**: таблица с поиском, включение/отключение
+  отдельных команд с защитой от вызова отключённых инструментов.
+- **Тёмная тема**, многострочный ввод, контекстное меню (правая кнопка мыши).
+- **Сворачиваемые блоки команд** — не засоряют чат, раскрываются по клику.
+- **Сохранение и переключение чатов**, переименование, экспорт в JSON.
+- **Автосохранение** истории после каждого сообщения.
+- **Кнопка Stop** для прерывания генерации.
+- **Автоматическое переподключение** при обрыве SSH.
+- **Сохранение настроек** (API‑ключ, SSH‑доступ, отключённые инструменты)
+  в `config.json`.
+- **Кроссплатформенный GUI‑клиент** — работает на Windows, Linux, macOS.
+- **Портативные сборки**: EXE для Windows, AppImage для Linux.
 
 ## 📦 Архитектура
-[GUI-клиент на Windows (Python/tkinter)]
+[GUI-клиент (Python/tkinter)]
 │ SSH (stdio)
 ▼
-[Rust-сервер на Debian (mcp-server)]
+[Rust-сервер на Linux (mcp-server)]
 │ читает tools.toml
 ▼
-[DeepSeek / OpenAI / Claude API]
+[DeepSeek / OpenAI / Claude / локальный LLM]
 
-- **Клиент** (`mcp_gui.py`) — графическое приложение на Python с использованием `ttkbootstrap`.
-- **Сервер** (`mcp-server`) — бинарник на Rust, реализующий JSON‑RPC по стандарту Model Context Protocol (MCP).
-- **Инструменты** (`tools.toml`) — конфигурационный файл с описанием более 300 команд, разделённых по категориям.
 
-## 🖥️ Быстрый старт (для конечного пользователя)
+- **Клиент** (`mcp_gui.py`) — графическое приложение на Python с `ttkbootstrap`.
+- **Сервер** (`mcp-server`) — бинарник на Rust, реализующий JSON‑RPC
+  по стандарту Model Context Protocol (MCP).
+- **Инструменты** (`tools.toml`) — конфигурационный файл с 476+ командами,
+  покрывающими все основные дистрибутивы Linux.
 
-1. Скачайте `MCPSys.exe` из [релизов](https://github.com/AlexShadow/MCPSys/releases).
-2. Запустите EXE, откройте **Settings → AI Provider**:
-   - Выберите провайдера (DeepSeek, OpenAI и т.д.).
+## 🖥️ Быстрый старт
+
+1. Скачайте последнюю версию под вашу ОС из [релизов](https://github.com/AlexShadow/MCPSys/releases):
+   - **Windows**: `MCPSys.exe`
+   - **Linux**: `MCPSys.AppImage`
+2. Запустите программу, откройте **Settings → AI Provider**:
+   - Выберите провайдера.
    - Вставьте API‑ключ.
    - Выберите модель.
-3. Перейдите на вкладку **SSH Connection**:
-   - Введите IP‑адрес Debian, имя пользователя (`root`) и путь к приватному SSH‑ключу.
-   - Нажмите **Install Server on Debian** и введите пароль.
-   - Сервер автоматически загрузится на хост.
-4. Нажмите **Save** — клиент подключится к серверу и загрузит все доступные инструменты.
-5. Начинайте чат: «Покажи загрузку процессора», «Установи Nginx», «Создай пользователя devuser».
+3. Перейдите на вкладку **Servers**:
+   - Введите IP‑адрес сервера, порт, имя пользователя и путь к SSH‑ключу.
+   - Нажмите **Install Server on Debian** (или **Check Server**,
+     если сервер уже установлен).
+4. Нажмите **Save** — клиент подключится и загрузит все доступные инструменты.
+5. Начинайте чат: «Покажи загрузку процессора», «Установи Nginx»,
+   «Создай пользователя devuser».
 
 ## 🔧 Установка и сборка для разработчиков
 
-### Клиент (Windows)
+### Зависимости
 
 ```bash
-git clone https://github.com/MCPSys/MCPSys.git
-cd MCPSys
-pip install -r requirements.txt   # openai, ttkbootstrap, httpx, paramiko, anthropic
-python mcp_gui.py
-pyinstaller --onefile --noconsole --add-binary "mcp-server;." --add-binary "tools.toml;." mcp_gui.py
+pip install -r requirements.txt
 ```
-Сборка в EXE
-```bash
-pyinstaller --onefile --noconsole --name MCPSys --add-binary "mcp-server;." --add-binary "tools.toml;." --collect-all paramiko --collect-all anthropic mcp_gui.py
+Сборка EXE (Windows)
+
 ```
-Сервер (Rust, собирается на Debian)
-```bash
-cd mcp-server-rust
-cargo build --release
+pyinstaller --onefile --noconsole --name MCPSys `
+    --add-binary "mcp-server;." --add-binary "tools.toml;." `
+    --collect-all paramiko --collect-all anthropic `
+    mcp_gui.py
 ```
-# Бинарник: target/release/mcp-server
-можно вставить на сервер вручную по пути /opt/mcp-server#
-mcp-server
-tools.toml
-Файл с описанием инструментов лежит в /opt/mcp-server/tools.toml на сервере. Его можно редактировать вручную для добавления новых команд.
+Сборка AppImage (Linux)
+```
+pip install pyinstaller paramiko anthropic openai ttkbootstrap httpx
+pyinstaller --onefile --name MCPSys \
+    --add-binary "mcp-server:." --add-binary "tools.toml:." \
+    --collect-all paramiko --collect-all anthropic \
+    mcp_gui.py
+# Выходной файл: dist/MCPSys — можно переименовать в MCPSys.AppImage
+```
+Сервер можно установить вручную в /opt/mcp-server/, либо через кнопку
+«Install Server on Debian» в GUI.
 
 📚 Примеры команд
 Запрос в чате	Действие
 «Выведи аптайм и использование памяти»	uptime и free -h
-«Обнови все пакеты»	apt update && apt upgrade -y
-«Создай базу данных myapp в PostgreSQL»	postgres_create_db
-«Перезапусти Nginx»	systemctl restart nginx
+«Обнови все пакеты»	upgrade_system
+«Установи htop»	install_package htop
+«Перезапусти nginx»	service_restart nginx
 «Покажи логи systemd за последние 50 строк»	journalctl -n 50
-«Напиши и запусти скрипт для бэкапа /etc»	ИИ напишет код, создаст файл и выполнит его
+«Открой порт 443»	firewall_allow_port 443
+«Скопируй файл с сервера A на сервер B»	ИИ выполнит rsync между серверами
+«Напиши и запусти скрипт для бэкапа»	ИИ напишет код, создаст файл и выполнит его
 🛠️ Технологии
 Клиент: Python 3.10+, tkinter, ttkbootstrap, openai, anthropic, httpx, paramiko
 
@@ -94,4 +120,5 @@ tools.toml
 MIT License — свободное использование, модификация и распространение.
 
 🤝 Благодарности
-Спасибо DeepSeek за предоставленный API для тестов, сообществу MCP за открытый протокол и всем, кто помогает делать Linux доступнее.
+Спасибо DeepSeek за предоставленный API для тестов, сообществу MCP
+за открытый протокол и всем, кто помогает делать Linux доступнее.
