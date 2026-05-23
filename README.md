@@ -99,16 +99,26 @@ pyinstaller --onefile --name MCPSys \
 Сервер можно установить вручную в /opt/mcp-server/, либо через кнопку
 «Install Server on Debian» в GUI.
 
-📚 Примеры команд
-Запрос в чате	Действие
-«Выведи аптайм и использование памяти»	uptime и free -h
-«Обнови все пакеты»	upgrade_system
-«Установи htop»	install_package htop
-«Перезапусти nginx»	service_restart nginx
-«Покажи логи systemd за последние 50 строк»	journalctl -n 50
-«Открой порт 443»	firewall_allow_port 443
-«Скопируй файл с сервера A на сервер B»	ИИ выполнит rsync между серверами
-«Напиши и запусти скрипт для бэкапа»	ИИ напишет код, создаст файл и выполнит его
+## 📚 Примеры команд
+
+| Запрос в чате                                   | Действие                                                                 |
+| :---------------------------------------------- | :------------------------------------------------------------------------ |
+| «Покажи загрузку процессора»                    | `uptime` и `lscpu`                                                        |
+| «Сколько свободного места на дисках?»           | `df -h`                                                                   |
+| «Обнови все пакеты»                             | `upgrade_system` (автоопределение пакетного менеджера)                    |
+| «Установи htop»                                 | `install_package htop`                                                    |
+| «Перезапусти nginx»                             | `service_restart nginx` (systemd / openrc / sysv)                         |
+| «Открой порт 443»                               | `firewall_allow_port 443` (ufw / firewalld / nft / iptables)              |
+| «Создай пользователя devuser»                   | `useradd devuser`                                                         |
+| «Добавь задачу в cron: бэкап каждую ночь»       | `cron_add "0 3 * * * tar -czf /backup/etc.tar.gz /etc"`                  |
+| «Покажи логи systemd за последние 50 строк»     | `journalctl -n 50`                                                        |
+| «Какие контейнеры Docker запущены?»              | `docker ps`                                                               |
+| «Скопируй файл с сервера A на сервер B»         | `rsync` между серверами                                                   |
+| «Напиши и запусти скрипт для бэкапа /etc»       | ИИ напишет bash-скрипт, создаст файл и выполнит его                       |
+| «Проверь, какие порты открыты»                  | `netstat -tulpn` или `ss -tulpn`                                          |
+| «Какой внешний IP у сервера?»                   | `curl ifconfig.me`                                                        |
+
+
 🛠️ Технологии
 Клиент: Python 3.10+, tkinter, ttkbootstrap, openai, anthropic, httpx, paramiko
 
